@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>林冲人生模拟器 · 课堂版 · 反/死结局分类</title>
+    <style>
+        /* 纯本地样式，不依赖任何外部资源 */
+        * {
+            box-sizing: border-box;
+            user-select: none; /* 课堂互动可选，保持界面整洁 */
+        }
+        body {
+            background: #1e2a2e;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Microsoft YaHei', 'SimHei', '宋体', system-ui, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
+        .game-container {
+            max-width: 680px;
+            width: 100%;
+            background: #fef3d6;
+            border-radius: 48px 32px 48px 32px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+            overflow: hidden;
+        }
+        .scroll-header {
+            background: #9b4b2c;
+            padding: 16px 20px;
+            text-align: center;
+            color: #ffefcf;
+            border-bottom: 3px solid #e9c891;
+        }
+        .scroll-header h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 4px;
+        }
+        .scroll-header p {
+            margin: 5px 0 0;
+            font-size: 0.8rem;
+        }
+        .scene {
+            padding: 24px 20px;
+            background: #fff7e8;
+        }
+        .scene-desc {
+            background: #e9dbc9;
+            padding: 16px;
+            border-radius: 30px 12px 30px 12px;
+            margin-bottom: 25px;
+            border-left: 6px solid #b1622c;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .opt-btn {
+            background: #2c2b26;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            color: #f7efcf;
+            width: 100%;
+            transition: 0.2s;
+        }
+        .opt-btn:active {
+            transform: scale(0.98);
+            background: #3e3a32;
+        }
+        .opt-letter {
+            background: #c9853a;
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 40px;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+        .creative-row {
+            background: #f3ecd9;
+            border-radius: 40px;
+            padding: 12px 15px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            border: 1px dashed #b98f5c;
+            margin-top: 12px;
+        }
+        .creative-row input {
+            flex: 2;
+            min-width: 130px;
+            padding: 9px 12px;
+            border-radius: 40px;
+            border: 1px solid #bc9a6a;
+            background: #fffcf0;
+            font-size: 0.85rem;
+            font-family: inherit;
+        }
+        .type-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #e7ddc7;
+            padding: 5px 12px;
+            border-radius: 40px;
+        }
+        .type-selector label {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #4f3a24;
+        }
+        .type-selector select {
+            background: #2c2b26;
+            color: #ffefcf;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-family: monospace;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .creative-row button, .reset-btn {
+            background: #7a5a3a;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .creative-row button:active, .reset-btn:active {
+            background: #5e422a;
+            transform: scale(0.96);
+        }
+        .reset-area {
+            text-align: center;
+            margin-top: 15px;
+        }
+        footer {
+            background: #dccaa8;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.7rem;
+            color: #4f3a24;
+        }
+        .end-badge {
+            display: inline-block;
+            font-size: 0.85rem;
+            background: #2c2b26;
+            color: #ffd966;
+            border-radius: 40px;
+            padding: 4px 12px;
+            margin-right: 10px;
+        }
+        @media (max-width: 560px) {
+            .opt-btn { padding: 10px 12px; }
+            .opt-letter { width: 34px; height: 34px; font-size: 1.2rem;}
+            .creative-row { flex-direction: column; align-items: stretch; }
+            .type-selector { justify-content: space-between; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameRoot">
+    <div class="scroll-header">
+        <h1>⚔️ 林冲人生模拟器</h1>
+        <p>· 反·死结局分类 · 雪夜抉择 · 课堂小组版</p>
+    </div>
+    <div class="scene" id="sceneMain"></div>
+    <footer>📌 小组合作 | 每个结局标注【反】或【死】 | 自由分支自选属性</footer>
+</div>
+
+<script>
+    // ======================= 结局库（已按“反/死”分类 + 标签醒目）========================
+    const endings = {
+        // 【死】类结局
+        "忍者之死": "【死】💀 林冲连夜逃离沧州，隐居山林，终生未复仇，郁郁而终。\n【结局：忍者之死 · 隐忍而亡】",
+        "无根的漂泊": "【死】🍂 林冲拒绝调岗，辞职逃亡，途中遭追杀，流落江湖，再无归宿。\n【结局：无根的漂泊 · 悲剧沉沦】",
+        "无辜葬身": "【死】🔥 草料场倒塌，林冲被压死，或被大火吞没，含恨而终。\n【结局：无辜葬身 · 含恨九泉】",
+        "终未反抗": "【死】⚰️ 林冲忍辱逃亡，最终被官府抓回，死于牢狱之中。\n【结局：终未反抗 · 懦弱致死】",
+        
+        // 【反】类结局
+        "逃亡的豹子": "【反】🐆 林冲设伏击杀陆谦，被官府通缉，提前逃亡，最终走上梁山，反抗之魂觉醒。\n【结局：逃亡的豹子 · 抗争之路】",
+        "雪夜的复仇": "【反】❄️⚔️ 林冲怒杀陆谦三人，雪夜上梁山，从此踏上反抗之路，英雄怒啸。\n【结局：雪夜的复仇（原著向）· 反抗之始】",
+        "冷血复仇者": "【反】🗡️ 林冲冷静设伏，杀死陆谦三人，处理痕迹，成为江湖独行侠，以暴制暴。\n【结局：冷血复仇者 · 反叛独狼】"
+    };
+
+    let state = { node: "start" };
+
+    // 通用结局展示 (支持标题和带分类的描述)
+    function renderEnding(title, description) {
+        state.node = "ending";
+        const sceneDiv = document.getElementById("sceneMain");
+        // 让描述中的【反】/【死】高亮风格，已经自带前缀，无需额外修改
+        sceneDiv.innerHTML = `
+            <div class="scene-desc" style="background:#dac29c;">
+                <p>🏁 命运歧路 · 终章</p>
+                <p style="font-size:1.3rem; font-weight:bold; margin:8px 0;">${escapeHtml(title)}</p>
+                <p style="white-space: pre-line;">${escapeHtml(description)}</p>
+            </div>
+            <div class="reset-area"><button class="reset-btn" id="resetGame">🎭 重新开始模拟</button></div>
+        `;
+        document.getElementById("resetGame")?.addEventListener("click", resetToStart);
+    }
+
+    // 简单的防XSS转义（纯文本够用）
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+
+    // 根据节点ID渲染场景 (每个创意行都加入 反/死 属性选择器)
+    function showNode(nodeId) {
+        const sceneDiv = document.getElementById("sceneMain");
+        if (nodeId === "start") {
+            state.node = "start";
+            sceneDiv.innerHTML = `
+                <div class="scene-desc">
+                    <p>📜 北宋末年，沧州牢城。<br>
+                    李小二慌忙告知：“陆谦那厮又追来害你，官人千万小心！”<br>
+                    怒火，在你心中燃起。你当如何？</p>
+                </div>
+                <div class="options">
+                    <button class="opt-btn" data-choice="A"><span class="opt-letter">A</span><span class="opt-text">🔪 买刀寻仇（原著）</span></button>
+                    <button class="opt-btn" data-choice="B"><span class="opt-letter">B</span><span class="opt-text">🍃 放弃寻仇，主动避险</span></button>
+                    <button class="opt-btn" data-choice="C"><span class="opt-letter">C</span><span class="opt-text">🏹 先发制人，设伏反杀</span></button>
+                </div>
+                <div class="creative-row">
+                    <input type="text" id="creativeInput" placeholder="✨ 空白分支：例如 投案告发/暗中联合..." autocomplete="off">
+                    <div class="type-selector">
+                        <label>📌 结局属性：</label>
+                        <select id="creativeTypeSelect">
+                            <option value="反">🏹 反 (反抗/上梁山/复仇)</option>
+                            <option value="死">💀 死 (隐忍/被害/悲剧)</option>
+                        </select>
+                    </div>
+                    <button id="submitCreative">✍️ 推演此分支</button>
+                </div>
+                <div class="reset-area"><button class="reset-btn" id="resetGame">🔄 重开命运</button></div>
+            `;
+        } 
+        else if (nodeId === "node2") {
+            state.node = "node2";
+            sceneDiv.innerHTML = `
+                <div class="scene-desc"><p>🏮 你连日寻仇未果，陆谦藏匿不出。<br>上级忽然调你去草料场任职。是福是祸？</p></div>
+                <div class="options">
+                    <button class="opt-btn" data-choice="A"><span class="opt-letter">A</span><span class="opt-text">📜 接受调岗（原著）</span></button>
+                    <button class="opt-btn" data-choice="B"><span class="opt-letter">B</span><span class="opt-text">🚶 拒绝调岗，另寻他路</span></button>
+                </div>
+                <div class="creative-row">
+                    <input type="text" id="creativeInput" placeholder="✨ 空白分支：假意接受，实则反击..." autocomplete="off">
+                    <div class="type-selector">
+                        <label>📌 结局属性：</label>
+                        <select id="creativeTypeSelect">
+                            <option value="反">🏹 反 (反抗/觉醒)</option>
+                            <option value="死">💀 死 (悲怆)</option>
+                        </select>
+                    </div>
+                    <button id="submitCreative">✍️ 推演此分支</button>
+                </div>
+                <div class="reset-area"><button class="reset-btn" id="resetGame">🔄 重开</button></div>
+            `;
+        } 
+        else if (nodeId === "node3") {
+            state.node = "node3";
+            sceneDiv.innerHTML = `
+                <div class="scene-desc"><p>❄️ 大雪纷飞，你住在草料场。寒风刺骨，大雪压塌了破屋。<br>是留在塌屋旁，还是外出沽酒取暖？</p></div>
+                <div class="options">
+                    <button class="opt-btn" data-choice="A"><span class="opt-letter">A</span><span class="opt-text">🍶 外出沽酒（原著）</span></button>
+                    <button class="opt-btn" data-choice="B"><span class="opt-letter">B</span><span class="opt-text">🏚️ 留在草料场</span></button>
+                </div>
+                <div class="creative-row">
+                    <input type="text" id="creativeInput" placeholder="✨ 空白分支：提前离开，暗中观察..." autocomplete="off">
+                    <div class="type-selector">
+                        <label>📌 结局属性：</label>
+                        <select id="creativeTypeSelect">
+                            <option value="反">🏹 反 (反抗/破局)</option>
+                            <option value="死">💀 死 (宿命)</option>
+                        </select>
+                    </div>
+                    <button id="submitCreative">✍️ 推演此分支</button>
+                </div>
+                <div class="reset-area"><button class="reset-btn" id="resetGame">🔄 重开</button></div>
+            `;
+        } 
+        else if (nodeId === "node4") {
+            state.node = "node4";
+            sceneDiv.innerHTML = `
+                <div class="scene-desc"><p>🏔️ 山神庙内，你亲耳听到陆谦等人得意洋洋道出阴谋：火烧草料场，置你于死地！<br>此刻的你，热血翻涌。</p></div>
+                <div class="options">
+                    <button class="opt-btn" data-choice="A"><span class="opt-letter">A</span><span class="opt-text">⚔️ 开门怒杀三人（原著）</span></button>
+                    <button class="opt-btn" data-choice="B"><span class="opt-letter">B</span><span class="opt-text">😶 忍住不杀，逃往他处</span></button>
+                    <button class="opt-btn" data-choice="C"><span class="opt-letter">C</span><span class="opt-text">🎯 先发制人，设伏反杀</span></button>
+                </div>
+                <div class="creative-row">
+                    <input type="text" id="creativeInput" placeholder="✨ 空白分支：挟持陆谦为人证告御状..." autocomplete="off">
+                    <div class="type-selector">
+                        <label>📌 结局属性：</label>
+                        <select id="creativeTypeSelect">
+                            <option value="反">🏹 反 (反抗/逆袭)</option>
+                            <option value="死">💀 死 (陨落)</option>
+                        </select>
+                    </div>
+                    <button id="submitCreative">✍️ 推演此分支</button>
+                </div>
+                <div class="reset-area"><button class="reset-btn" id="resetGame">🔄 重开</button></div>
+            `;
+        }
+
+        // 绑定选项按钮
+        document.querySelectorAll(".opt-btn").forEach(btn => {
+            btn.onclick = () => handleChoice(btn.dataset.choice);
+        });
+        // 重置按钮
+        document.getElementById("resetGame")?.addEventListener("click", resetToStart);
+        // 创意分支按钮
+        document.getElementById("submitCreative")?.addEventListener("click", handleCreative);
+    }
+
+    // 处理固定选项分支（遵循原著与设定结局，均带反/死分类）
+    function handleChoice(choice) {
+        if (state.node === "start") {
+            if (choice === "A") showNode("node2");
+            else if (choice === "B") renderEnding("忍者之死", endings["忍者之死"]);
+            else if (choice === "C") renderEnding("逃亡的豹子", endings["逃亡的豹子"]);
+        } 
+        else if (state.node === "node2") {
+            if (choice === "A") showNode("node3");
+            else if (choice === "B") renderEnding("无根的漂泊", endings["无根的漂泊"]);
+        } 
+        else if (state.node === "node3") {
+            if (choice === "A") showNode("node4");
+            else if (choice === "B") renderEnding("无辜葬身", endings["无辜葬身"]);
+        } 
+        else if (state.node === "node4") {
+            if (choice === "A") renderEnding("雪夜的复仇", endings["雪夜的复仇"]);
+            else if (choice === "B") renderEnding("终未反抗", endings["终未反抗"]);
+            else if (choice === "C") renderEnding("冷血复仇者", endings["冷血复仇者"]);
+        }
+    }
+
+    // 创意分支处理（带用户自定义反/死分类）
+    function handleCreative() {
+        let input = document.getElementById("creativeInput")?.value.trim();
+        if (!input) {
+            alert("请填写空白分支的设想（例如：火并陆谦、连夜上梁山等）");
+            return;
+        }
+        // 获取用户选择的结局类型（反或死）
+        const typeSelect = document.getElementById("creativeTypeSelect");
+        let selectedType = "反";   // 默认反
+        if (typeSelect && typeSelect.value) {
+            selectedType = typeSelect.value;
+        }
+        
+        // 根据选择的类型生成结局标题和描述（鲜明标注反/死）
+        let typeIcon = (selectedType === "反") ? "⚔️【反】" : "💀【死】";
+        let customTitle = `${typeIcon} 「${input}」之路 · ${selectedType}之章`;
+        
+        let customDesc = "";
+        if (selectedType === "反") {
+            customDesc = `【反】🔥 林冲选择了「${input}」。这一抉择引爆了他心中的反抗之火，或怒杀仇敌、或奔上梁山，从此再不低眉顺眼，成为抗争命运的猛士。\n✨ 结局走向：${selectedType} · 反抗精神长存。`;
+        } else {
+            customDesc = `【死】🌑 林冲选择了「${input}」。这一抉择使他坠入悲剧深渊，或遭暗算、或郁郁而终，未能摆脱命运的枷锁，含恨消逝于风雪之中。\n✨ 结局走向：${selectedType} · 悲怆终局。`;
+        }
+        renderEnding(customTitle, customDesc);
+    }
+
+    // 重置游戏
+    function resetToStart() {
+        state = { node: "start" };
+        showNode("start");
+    }
+
+    // 额外安全修正: 确保极端情况下标签正确, 所有结局分类已经内嵌在endings的描述中
+    // 并且展示出来的结局完全符合 反/死 两类。
+    // （若教师或小组需要核对，所有预设结局均已标注清晰）
+    
+    // 初始化游戏
+    showNode("start");
+</script>
+</body>
+</html>
+     
